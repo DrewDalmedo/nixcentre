@@ -41,6 +41,9 @@ in
       systemd.network.networks."10-lan" = {
         matchConfig.Name = "lan0";
         networkConfig.DHCP = "ipv4";
+        # Use the DHCP search domain for short names like `nixcentre`, as
+        # Windows, macOS, iOS and NetworkManager do (networkd doesn't by default).
+        dhcpV4Config.UseDomains = true;
       };
       services.avahi = {
         enable = true;
