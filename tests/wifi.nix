@@ -87,20 +87,20 @@ in
             " --dhcp-leasefile=/tmp/phone.leases --pid-file=/tmp/phone-dnsmasq.pid",
         )
         hotspot.wait_until_succeeds(
-            "iwctl station wlan1 scan; sleep 3; iwctl station wlan1 get-networks | grep -q 'Test iPhone'",
+            "iwctl station wlan1 scan; sleep 3; iwctl station wlan1 get-networks | grep 'Test iPhone' > /dev/null",
             timeout=180,
         )
         hotspot.succeed("iwctl --passphrase hotspot-password station wlan1 connect 'Test iPhone'")
-        hotspot.wait_until_succeeds("ip -4 addr show wlan1 | grep -q 'inet 172.20.10.'", timeout=120)
-        hotspot.succeed("ip route show default | grep -q 'via 172.20.10.1 dev wlan1'")
-        hotspot.succeed("resolvectl dns wlan1 | grep -q 172.20.10.1")
+        hotspot.wait_until_succeeds("ip -4 addr show wlan1 | grep 'inet 172.20.10.' > /dev/null", timeout=120)
+        hotspot.succeed("ip route show default | grep 'via 172.20.10.1 dev wlan1' > /dev/null")
+        hotspot.succeed("resolvectl dns wlan1 | grep 172.20.10.1 > /dev/null")
 
     with subtest("the apps stay closed to the phone's network"):
         addr = hotspot.succeed("ip -4 -o addr show wlan1 | awk '{print $4}' | cut -d/ -f1").strip()
         hotspot.succeed(f"ip netns exec phone ping -c 1 -W 5 {addr}")
         hotspot.fail(f"ip netns exec phone ${pkgs.curl}/bin/curl -sf -m 5 http://{addr}/")
         hotspot.fail(f"ip netns exec phone ${pkgs.curl}/bin/curl -sf -m 5 http://{addr}:8080/")
-        hotspot.succeed("curl -sf http://10.10.10.1/ | grep -q 'Movies &amp; TV'")
+        hotspot.succeed("curl -sf http://10.10.10.1/ | grep 'Movies &amp; TV' > /dev/null")
         hotspot.shutdown()
 
     with subtest("with wifi.enable, the server broadcasts the home network"):
@@ -108,15 +108,15 @@ in
         accesspoint.wait_for_unit("multi-user.target")
         accesspoint.wait_for_unit("hostapd.service")
         accesspoint.fail("systemctl is-active iwd.service")
-        accesspoint.wait_until_succeeds("bridge link show | grep -q 'wlan0.*master br0'")
+        accesspoint.wait_until_succeeds("bridge link show | grep 'wlan0.*master br0' > /dev/null")
         accesspoint.succeed(
             "ip netns add laptop",
             "iw phy phy1 set netns name laptop",
             "ip netns exec laptop ${pkgs.wpa_supplicant}/bin/wpa_supplicant -B -i wlan1 -c ${laptopWifi}",
         )
-        accesspoint.wait_until_succeeds("ip netns exec laptop iw dev wlan1 link | grep -q 'SSID: nixcentre'", timeout=120)
+        accesspoint.wait_until_succeeds("ip netns exec laptop iw dev wlan1 link | grep 'SSID: nixcentre' > /dev/null", timeout=120)
         accesspoint.succeed("ip netns exec laptop ${pkgs.busybox}/bin/udhcpc -i wlan1 -n -q -t 20 -s ${udhcpcScript}")
-        accesspoint.succeed("ip -n laptop -4 addr show wlan1 | grep -q 'inet 10.10.10.'")
-        accesspoint.succeed("ip netns exec laptop ${pkgs.curl}/bin/curl -sf http://10.10.10.1/ | grep -q 'Movies &amp; TV'")
+        accesspoint.succeed("ip -n laptop -4 addr show wlan1 | grep 'inet 10.10.10.' > /dev/null")
+        accesspoint.succeed("ip netns exec laptop ${pkgs.curl}/bin/curl -sf http://10.10.10.1/ | grep 'Movies &amp; TV' > /dev/null")
   '';
 }
