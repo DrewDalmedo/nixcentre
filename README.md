@@ -84,8 +84,10 @@ names and firewall are generated from that list. Removing an app's line from
 
 ## Testing
 
-`nix flake check` builds everything and runs [tests/vm.nix](tests/vm.nix). The
-test boots the server next to a simulated laptop and checks:
+`nix flake check` builds everything and runs two tests in virtual machines.
+
+[tests/vm.nix](tests/vm.nix) boots the server next to a simulated laptop and
+checks:
 
 - DHCP and DNS
 - the homepage
@@ -94,5 +96,11 @@ test boots the server next to a simulated laptop and checks:
 - the shared folder
 - both `fakeInternet` modes
 
-It needs KVM to run at a reasonable speed, and it downloads QEMU and the test
-tools, so don't run it over phone data.
+[tests/wifi.nix](tests/wifi.nix) uses simulated Wi-Fi radios to check:
+
+- joining a phone's hotspot with `iwctl`, while keeping the apps closed to
+  the phone's network
+- broadcasting the home network for a laptop to join
+
+They need KVM to run at a reasonable speed, and they download QEMU and the test
+tools, so don't run them over phone data.
