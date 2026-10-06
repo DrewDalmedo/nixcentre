@@ -65,7 +65,8 @@ The Ethernet port stays part of the same network, so you can mix both.
 ## Phones and TVs
 
 **Bookmark <http://10.10.10.1>** or add it to your home screen. It works however
-your phone is set up.
+your phone is set up. On an iPhone, <http://nixcentre.local> works too: iPhones
+find `.local` names by themselves (Bonjour), whatever they do with DNS.
 
 ### Phones and mobile data
 
@@ -94,7 +95,8 @@ with "limited connectivity"; say yes.
 ### Apps
 
 Install these while you have internet. Smart TVs can join your phone's hotspot
-once to do it.
+once to do it. On an iPhone, allow it when an app asks to find devices on your
+local network; otherwise it can't see the server.
 
 | Service | Apps | Server address to enter |
 | --- | --- | --- |
