@@ -21,8 +21,10 @@ in
 
   nodes.server = {
     imports = [ ../hosts/nixcentre ];
-    # Named like a real Ethernet port, so the default `en*` match picks it up.
     virtualisation.interfaces.enlan0.vlan = 1;
+    # Only this port: the VM's built-in NIC (eth0) has an `en*` alternative name,
+    # which the default pattern would match too.
+    nixcentre.lan.ports = [ "enlan0" ];
     virtualisation.memorySize = 4096;
     virtualisation.cores = 4;
     virtualisation.diskSize = 4096;

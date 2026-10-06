@@ -40,8 +40,9 @@ in
         type = types.listOf types.str;
         default = [ "en*" ];
         description = ''
-          Wired network ports that make up the home network (shell globs).
-          USB tethering devices are always excluded.
+          Wired network ports that make up the home network: shell globs, matched
+          against interface names and their alternative names. USB tethering
+          devices are always excluded.
         '';
       };
 

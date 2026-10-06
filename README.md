@@ -91,4 +91,5 @@ test boots the server next to a simulated laptop and checks:
 - the shared folder
 - both `fakeInternet` modes
 
-It needs KVM to run at a reasonable speed.
+It needs KVM to run at a reasonable speed, and it downloads QEMU and the test
+tools, so don't run it over phone data.
