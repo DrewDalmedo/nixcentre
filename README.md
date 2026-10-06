@@ -16,23 +16,25 @@ server. Once it's set up, it needs no internet at all.
  phones, laptop, TV ))) Wi-Fi router in AP mode ──┐
                                                   ├── Ethernet ── ThinkCentre (10.10.10.1)
  or: laptop ───────────────── Ethernet switch ────┘                      │
-                                                                         └── USB ── phone (tethering,
-                                                                                    only for updates)
+                                                                         └── phone, over USB or
+                                                                             its Wi-Fi hotspot
+                                                                             (only for updates)
 ```
 
 - The ThinkCentre runs the network. It hands out addresses (DHCP) and names
   (DNS), so a spare router only needs to provide Wi-Fi. The ThinkCentre's own
   Wi-Fi card can also act as a hotspot.
-- Its internet connection is a phone plugged in over USB with tethering on. You
-  only need that for installing, updating, and fetching posters and descriptions
-  for movies.
+- Its internet connection is your phone: an iPhone or Android phone over USB,
+  or the phone's Wi-Fi hotspot. You only need it for installing, updating, and
+  fetching posters and descriptions for movies.
 - Phones keep using mobile data while on the home network. One setting
   (`fakeInternet`) makes them treat the network as online instead.
 
 ## Documentation
 
-- [docs/install.md](docs/install.md): installing, step by step. About 2.4 GB
-  goes over the phone, or about half that with the optional data-saving step.
+- [docs/install.md](docs/install.md): installing, step by step, over your
+  phone's hotspot. About 2.4 GB goes over the phone, or about half that with
+  the optional data-saving step.
 - [docs/using.md](docs/using.md): setting up the network, adding movies, books
   and Wikipedia, phones, updating, and troubleshooting.
 
@@ -46,7 +48,7 @@ Everything you're likely to change is in
 | `adminUser` | `"drew"` | Your login, also used for the shared folder |
 | `sshKeys` | `[ ]` | SSH public keys allowed to log in |
 | `fakeInternet` | `false` | Answer devices' internet checks so they stay on Wi-Fi. Phones then stop using mobile data while connected. |
-| `shareTetheredInternet` | `false` | Share a tethered phone's internet with every device at home |
+| `shareTetheredInternet` | `false` | Share the phone's internet with every device at home |
 | `dataDisk` | `null` | Label of an extra drive to keep media on, e.g. `"media"` |
 | `wifi.enable` | `false` | Use the ThinkCentre's Wi-Fi card as a hotspot |
 | `domain` | `"home.arpa"` | Names are `<app>.home.arpa` |
@@ -63,7 +65,8 @@ hosts/nixcentre/        this machine: settings and hardware
 modules/
   options.nix           the settings above
   base.nix              boot, users, SSH, time, GPU drivers, offline-friendly Nix
-  network.nix           the home network: bridge, DHCP/DNS, mDNS, phone tethering
+  network.nix           the home network (bridge, DHCP/DNS, mDNS) and the phone
+                        connection (USB tethering, Wi-Fi hotspot)
   fake-internet.nix     answers for devices' internet checks (when enabled)
   wifi-ap.nix           the Wi-Fi hotspot (when enabled)
   storage.nix           /srv/media and the optional media drive

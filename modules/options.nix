@@ -77,8 +77,8 @@ in
     '';
 
     shareTetheredInternet = mkEnableOption ''
-      sharing the internet connection of a USB-tethered phone with the whole home
-      network. Everything on the network then uses your phone's data
+      sharing the phone's internet connection (USB or Wi-Fi hotspot) with the
+      whole home network. Everything on the network then uses your phone's data
     '';
 
     mediaDir = mkOption {

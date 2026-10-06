@@ -55,6 +55,9 @@ in
   testScript = ''
     import time
 
+    # Addresses dnsmasq hands out: .100 to .250.
+    LEASE = r"10\.10\.10\.(1[0-9][0-9]|2[0-4][0-9]|250)"
+
     start_all()
 
     with subtest("the server sets up the home network"):
@@ -66,14 +69,14 @@ in
 
     with subtest("the laptop gets an address, a gateway and DNS"):
         laptop.wait_for_unit("multi-user.target")
-        laptop.wait_until_succeeds("ip -4 addr show lan0 | grep -q 'inet 10.10.10.1[0-9][0-9]/24'")
+        laptop.wait_until_succeeds(f"ip -4 addr show lan0 | grep -qE 'inet {LEASE}/24'")
         laptop.succeed("ip route | grep -q 'default via 10.10.10.1'")
 
     with subtest("home names resolve, internet names fail fast"):
         for name in ["nixcentre.home.arpa", "home.arpa", "wiki.home.arpa", "tv.home.arpa", "nixcentre"]:
-            laptop.succeed(f"getent hosts {name} | grep -q '^10.10.10.1 '")
-        laptop.succeed("getent hosts laptop.home.arpa | grep -q '^10.10.10.1[0-9][0-9] '")
-        laptop.wait_until_succeeds("getent hosts nixcentre.local | grep -q '^10.10.10.1 '")
+            laptop.succeed(f"getent ahostsv4 {name} | grep -q '^10.10.10.1 '")
+        laptop.succeed(f"getent ahostsv4 laptop.home.arpa | grep -qE '^{LEASE} '")
+        laptop.wait_until_succeeds("getent ahostsv4 nixcentre.local | grep -q '^10.10.10.1 '")
         start = time.monotonic()
         laptop.fail("getent hosts example.com")
         laptop.fail("getent hosts connectivitycheck.gstatic.com")
@@ -115,12 +118,12 @@ in
         laptop.fail("curl -sf -m 5 http://connectivitycheck.gstatic.com/generate_204")
         server.succeed("/run/current-system/specialisation/fake-internet/bin/switch-to-configuration test")
         laptop.succeed("resolvectl flush-caches")
-        laptop.wait_until_succeeds("getent hosts connectivitycheck.gstatic.com | grep -q '^10.10.10.1 '")
+        laptop.wait_until_succeeds("getent ahostsv4 connectivitycheck.gstatic.com | grep -q '^10.10.10.1 '")
         laptop.succeed("test $(curl -s -o /dev/null -w '%{http_code}' http://connectivitycheck.gstatic.com/generate_204) = 204")
         laptop.succeed("test $(curl -s -o /dev/null -w '%{http_code}' http://clients3.google.com/generate_204) = 204")
         laptop.succeed("curl -sf http://captive.apple.com/hotspot-detect.html | grep -q '<BODY>Success</BODY>'")
         laptop.succeed("test \"$(curl -sf http://www.msftconnecttest.com/connecttest.txt)\" = 'Microsoft Connect Test'")
-        laptop.succeed("getent hosts dns.msftncsi.com | grep -q '^131.107.255.255 '")
+        laptop.succeed("getent ahostsv4 dns.msftncsi.com | grep -q '^131.107.255.255 '")
         laptop.succeed("printf 'success\\n' > /tmp/expected && curl -sf http://detectportal.firefox.com/success.txt > /tmp/got && cmp /tmp/got /tmp/expected")
         laptop.succeed("curl -si http://connectivity-check.ubuntu.com/ | grep -qi '^x-networkmanager-status: online'")
         laptop.succeed("curl -s -o /dev/null -w '%{redirect_url}' http://www.google.com/search | grep -q '^http://nixcentre.home.arpa/'")

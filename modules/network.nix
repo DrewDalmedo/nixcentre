@@ -1,6 +1,7 @@
 # The home network. The ThinkCentre's Ethernet port (plus the Wi-Fi hotspot, if
 # enabled) forms a bridge, br0, at 10.10.10.1. dnsmasq hands out addresses and
-# names on it. A USB-tethered phone, when plugged in, is the server's internet.
+# names on it. A phone is the server's internet, when you connect one: over USB
+# (tethering) or through its Wi-Fi hotspot.
 {
   config,
   lib,
@@ -19,6 +20,23 @@ let
     "cdc_ether"
     "ipheth"
   ];
+
+  # How the server uses a phone's connection: DHCP, plus forwarding when it's
+  # shared with the home network.
+  uplink = {
+    networkConfig = {
+      DHCP = "yes";
+      IPv6AcceptRA = true;
+    }
+    // lib.optionalAttrs cfg.shareTetheredInternet {
+      IPv4Forwarding = true;
+    };
+    linkConfig.RequiredForOnline = "no";
+  };
+
+  # The Wi-Fi card can join a phone's hotspot, unless it's busy being the home
+  # network's own hotspot (wifi-ap.nix): one card can't do both.
+  wifiUplink = !cfg.wifi.enable;
 in
 {
   networking = {
@@ -71,21 +89,31 @@ in
       linkConfig.RequiredForOnline = "no";
     };
 
-    networks."30-tether" = {
+    networks."30-tether" = uplink // {
       matchConfig.Driver = tetherDrivers;
-      networkConfig = {
-        DHCP = "yes";
-        IPv6AcceptRA = true;
-      }
-      // lib.optionalAttrs cfg.shareTetheredInternet {
-        IPv4Forwarding = true;
-      };
-      linkConfig.RequiredForOnline = "no";
     };
+
+    networks."40-wifi-uplink" = lib.mkIf wifiUplink (
+      uplink
+      // {
+        matchConfig.WLANInterfaceType = "station";
+      }
+    );
   };
 
   # iPhone USB tethering needs usbmuxd to pair ("Trust This Computer?").
   services.usbmuxd.enable = true;
+
+  # Joining a phone's hotspot: `iwctl station wlp1s0 connect "Your iPhone"`
+  # (see docs/using.md). iwd only joins the network; networkd does the rest.
+  networking.wireless.iwd = lib.mkIf wifiUplink {
+    enable = true;
+    settings = {
+      General.EnableNetworkConfiguration = false;
+      # Keep the kernel's name for the card (e.g. wlp1s0) instead of iwd's own.
+      DriverQuirks.DefaultInterface = "*";
+    };
+  };
 
   # systemd-resolved answers the server's own lookups, using the phone's DNS while
   # tethered. Avahi does mDNS, so keep resolved out of its way.

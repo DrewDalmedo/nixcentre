@@ -20,8 +20,11 @@
         ];
       };
 
-      # `nix flake check` boots the server in a VM and tests it (slow without KVM).
-      checks.${system}.vm = pkgs.testers.runNixOSTest ./tests/vm.nix;
+      # `nix flake check` boots the server in VMs and tests it (slow without KVM).
+      checks.${system} = {
+        vm = pkgs.testers.runNixOSTest ./tests/vm.nix;
+        wifi = pkgs.testers.runNixOSTest ./tests/wifi.nix;
+      };
 
       formatter.${system} = pkgs.nixfmt-tree;
     };

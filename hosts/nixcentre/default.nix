@@ -34,7 +34,8 @@
     #        network and short names always work, but phones stop using mobile data.
     fakeInternet = false;
 
-    # Share a USB-tethered phone's internet with every device at home (uses phone data).
+    # Share the phone's internet (USB or hotspot) with every device at home.
+    # Everything then uses your phone's data.
     shareTetheredInternet = false;
 
     # Label of an extra drive to keep media on, e.g. "media". null = the system drive.

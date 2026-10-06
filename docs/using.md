@@ -188,20 +188,64 @@ complete. To replace an old version, delete the old file.
 Jellyfin fetches posters, plot summaries and cast lists from the internet, so
 new films show up as plain file names until it can. Two ways to fill them in:
 
-- **Tether your phone** to the server (below), then in Jellyfin choose
+- **Connect the server to your phone** (below), then in Jellyfin choose
   *Dashboard → Libraries → Scan All Libraries*. It costs a few MB per film.
 - **Bring them with the files.** [tinyMediaManager](https://www.tinymediamanager.org),
   running on a laptop that has internet, saves a poster and an `.nfo` file next
   to each video. Jellyfin reads those offline.
 
 Audiobookshelf can do the same with *Match* on a book while the phone is
-tethered. Book covers and details embedded in the files work offline.
+connected. Book covers and details embedded in the files work offline.
 
 ## Using the phone's internet
 
-Plug your phone into the ThinkCentre and turn on USB tethering. On an iPhone, tap
-*Trust* the first time. The server is online within seconds; `networkctl` shows
-the connection. Unplug when you're done.
+The server gets online through your phone, over a USB cable or the phone's Wi-Fi
+hotspot. Either way, `networkctl` shows the connection once it's up.
+
+### iPhone over USB
+
+1. Turn on *Settings → Personal Hotspot → Allow Others to Join*.
+2. Plug the iPhone into the ThinkCentre and unlock it.
+3. The first time, tap *Trust* and enter your passcode.
+
+The server is online within seconds, and the iPhone charges while it's plugged
+in. Unplug it when you're done.
+
+### Android over USB
+
+Plug it in and turn on
+*Settings → Network & internet → Hotspot & tethering → USB tethering*.
+
+### Over the phone's Wi-Fi hotspot
+
+This uses the ThinkCentre's Wi-Fi card, so it isn't available while the card is
+the home network's own hotspot (`wifi.enable = true`). Use USB then.
+
+The curly apostrophe in iPhone names (*Sam’s iPhone*) is hard to type, so
+first rename the phone to something simple, like `iphone`, under
+*Settings → General → About → Name*.
+
+Turn on the hotspot. Then on the server, find the card's name and join the
+hotspot. You only need to enter the password the first time:
+
+```sh
+iwctl device list                          # the card's name, e.g. wlp1s0
+iwctl station wlp1s0 get-networks          # your phone should be listed
+iwctl station wlp1s0 connect iphone        # asks for the hotspot password
+```
+
+The server remembers the hotspot and rejoins whenever it's on. If you also turn
+on the hotspot for other things, stop it from rejoining by itself so it
+doesn't use data behind your back:
+
+```sh
+iwctl known-networks iphone set-property AutoConnect no
+```
+
+Then connect by hand when you want to, and `iwctl station wlp1s0 disconnect`
+when you're done.
+
+### Sharing it with the home network
 
 Only the server uses this connection. To share it with everything at home, set
 `shareTetheredInternet = true` and rebuild. Then every device on your network
@@ -224,7 +268,8 @@ anything. Settings changes don't need downloads, but adding new apps or
 packages does. Note your changes with `git commit -am "What I changed"`, and
 `git push` them next time you're online.
 
-**To update the software**, tether your phone and run:
+**To update the software**, [connect the server to your phone](#using-the-phones-internet)
+and run:
 
 ```sh
 cd /etc/nixos
@@ -284,6 +329,6 @@ folder wait for the drive rather than filling up the system drive.
   HEVC, and 7th-generation and newer also handle HEVC 10-bit and VP9.
 - **Something isn't running:** `systemctl --failed`, then `journalctl -b -u NAME`
   for its log.
-- **The clock is wrong:** `chronyc tracking` shows the time source. Tethering a
+- **The clock is wrong:** `chronyc tracking` shows the time source. Connecting a
   phone corrects it. If the clock resets whenever the server loses power,
   replace its CMOS battery.

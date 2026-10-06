@@ -5,9 +5,10 @@ Budget about an hour. You need:
 - the ThinkCentre, plus a monitor and keyboard for the install (afterwards it
   runs without them)
 - a USB stick of 2 GB or more
-- an Android phone with USB tethering and its cable, with about 2.4 GB of mobile
-  data, or 1.3 GB if you do [step 6](#6-optional-save-about-1-gb-of-phone-data).
-  For an iPhone, see the note in step 3.
+- your phone's internet: about 2.4 GB of data, or 1.3 GB if you do
+  [step 6](#6-optional-save-about-1-gb-of-phone-data). With an iPhone, the
+  install goes over its Wi-Fi hotspot, so the ThinkCentre needs a Wi-Fi card
+  (step 3 shows how to check). An Android phone can also use a USB cable.
 - the NixOS installer, downloaded somewhere with internet
 
 ## 1. Make the installer USB stick
@@ -41,19 +42,41 @@ Save and exit with <kbd>F10</kbd>.
 Plug in the USB stick, switch on, press <kbd>F12</kbd>, pick the USB stick, then
 the first menu entry. You end up at a prompt as the user `nixos`.
 
-Plug in your phone and turn on USB tethering. On Android that's
-*Settings → Network & internet → Hotspot & tethering → USB tethering*. Check that
-you're online:
+Then get online one of these ways.
+
+**iPhone (or any phone's) Wi-Fi hotspot.** The installer can't use an iPhone over
+USB, because it lacks the helper program that pairs with it. The installed
+system has it, so USB works from then on. For the install, use the hotspot:
+
+1. Check that the ThinkCentre has Wi-Fi: `nmcli device` should list a device of
+   type `wifi`. If it doesn't, see "No Wi-Fi card?" below.
+2. On the iPhone, turn on *Settings → Personal Hotspot → Allow Others to Join*,
+   and keep that screen open so it stays visible.
+3. On the ThinkCentre, run `sudo nmtui`, choose *Activate a connection*, pick
+   your iPhone from the list, and enter the hotspot password.
+
+   iPhone names usually contain a curly apostrophe (*Sam’s iPhone*) that you
+   can't type on a normal keyboard. That's why `nmtui`'s list is easier than
+   typing the name. Alternatively, rename the phone under
+   *Settings → General → About → Name*, e.g. to `iphone`, and run
+   `sudo nmcli device wifi connect iphone password "hotspot password"`.
+
+**Android USB tethering.** Plug in the phone and turn on
+*Settings → Network & internet → Hotspot & tethering → USB tethering*.
+
+**Ethernet.** Any wired connection with internet works too.
+
+Check that you're online:
 
 ```sh
 ping -c 3 cache.nixos.org
 ```
 
-> **iPhone:** USB tethering needs a helper program that the installer lacks.
-> After the install it works fine, but for the install itself, use Personal
-> Hotspot over Wi-Fi instead, if the ThinkCentre has a Wi-Fi card:
-> `sudo nmcli device wifi connect "Your iPhone" password "hotspot password"`.
-> Otherwise use any Ethernet connection with internet.
+> **No Wi-Fi card?** Many ThinkCentre Tiny units were sold without one. A cheap
+> USB Wi-Fi adapter works with the installer; ones with MediaTek chips, like
+> the MT7612U or MT7921AU, need no extra drivers. Otherwise, borrow an Android
+> phone or a wired connection for the install. Afterwards, the iPhone works
+> over USB.
 
 ## 4. Partition the drive
 
@@ -124,7 +147,8 @@ nixos-enter --root /mnt -c 'chown -R drew:users /etc/nixos'
 reboot
 ```
 
-Pull out the USB stick while it restarts. Once it's up, you can unplug the phone.
+Pull out the USB stick while it restarts. Once it's up, you can turn off the
+hotspot or unplug the phone.
 
 ## 8. First start
 
